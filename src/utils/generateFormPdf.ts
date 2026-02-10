@@ -1,9 +1,11 @@
 import jsPDF from "jspdf";
 import type { QuestionList } from "../types";
+import { loadImageBase64 } from "./imageStore";
 
 export async function generateFormPDF(
   questions: QuestionList,
   answers: Record<number, unknown>,
+  imageMap?: Record<number, string>,
 ) {
   const doc = new jsPDF();
 
@@ -32,20 +34,25 @@ export async function generateFormPDF(
     y += 7;
 
     /* ---- ANSWER ---- */
-    if (q.answerType === "ImageUpload" && answer instanceof File) {
-      const base64 = await filetoBase64(answer);
-      const format = base64.includes("image/png") ? "PNG" : "JPEG";
+    if (q.answerType === "FileUpload" && imageMap?.[i]) {
+      const base64 = await loadImageBase64(imageMap[i]);
 
-      const imgHeight = 80;
-      const imgPadding = 5;
+      if (base64) {
+        const format = base64.includes("image/png") ? "PNG" : "JPEG";
+        const imgHeight = 80;
+        const imgPadding = 5;
 
-      if (y + imgHeight > PAGE_HEIGHT - MARGIN) {
-        doc.addPage();
-        y = MARGIN;
+        if (y + imgHeight > PAGE_HEIGHT - MARGIN) {
+          doc.addPage();
+          y = MARGIN;
+        }
+
+        doc.addImage(base64, format, 10, y, 80, imgHeight);
+        y += imgHeight + imgPadding;
+      } else {
+        doc.text("A: [Image missing]", 14, y);
+        y += 10;
       }
-
-      doc.addImage(base64, format, 10, y, 80, imgHeight);
-      y += imgHeight + imgPadding;
     } else {
       const answerText = Array.isArray(answer)
         ? answer.join(", ")
@@ -64,13 +71,4 @@ export async function generateFormPDF(
   }
 
   doc.save("form_responses.pdf");
-}
-
-function filetoBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }

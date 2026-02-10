@@ -128,7 +128,7 @@ export function DynamicForm({
       JSON.stringify([...existing, savedForm]),
     );
 
-    generateFormPDF(questions, cleanAnswers);
+    generateFormPDF(questions, cleanAnswers, newImageMap);
     onSubmit(cleanAnswers);
     setSaving(false);
   };
