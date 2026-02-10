@@ -1,0 +1,7 @@
+[
+  {
+    "question": "Test",
+    "answerType": "FileUpload",
+    "required": true
+  }
+]
