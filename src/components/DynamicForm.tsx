@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import type { DynamicFormProps, SavedForm } from "../types";
 import {
+  Autocomplete,
   Box,
   Button,
   Checkbox,
   FormControlLabel,
-  MenuItem,
   Radio,
   RadioGroup,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -268,17 +267,21 @@ export function DynamicForm({
                 sx={{ ...questionBoxStyle, borderColor: errorBorder }}
               >
                 <QuestionLabel text={q.question} required={q.required} />
-                <Select
-                  value={(val as string) || ""}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                >
-                  <MenuItem value="">Select...</MenuItem>
-                  {q.answers.map((answer) => (
-                    <MenuItem key={answer} value={answer}>
-                      {answer}
-                    </MenuItem>
-                  ))}
-                </Select>
+
+                <Autocomplete
+                  options={q.answers}
+                  value={(val as string) || null}
+                  onChange={(_, newValue) => handleChange(index, newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Select..."
+                      error={!!errors[index]}
+                    />
+                  )}
+                  isOptionEqualToValue={(option, value) => option === value}
+                />
+
                 {errors[index] && (
                   <Typography color="error" variant="caption">
                     {errors[index]}

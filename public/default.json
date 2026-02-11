@@ -2,7 +2,28 @@
   {
     "question": "Program Area",
     "answerType": "Dropdown",
-    "answers": ["Area 1", "Area 2", "Area 3", "Area 4"],
+    "answers": [
+      "ADS",
+      "AUR",
+      "AUT",
+      "CMN",
+      "CMP",
+      "CNT",
+      "COS",
+      "CUA",
+      "DDE",
+      "ECE",
+      "EPS",
+      "EET",
+      "FMT",
+      "GRA",
+      "HEA",
+      "MTF",
+      "PMT",
+      "STS",
+      "THM",
+      "DIV"
+    ],
     "required": true
   },
   {
