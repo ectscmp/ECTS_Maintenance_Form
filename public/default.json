@@ -22,9 +22,15 @@
       "PMT",
       "STS",
       "THM",
-      "DIV"
+      "DIV",
+      "Other"
     ],
     "required": true
+  },
+  {
+    "question": "If other, type here",
+    "answerType": "TextBox",
+    "required": false
   },
   {
     "question": "Instructor(s)",

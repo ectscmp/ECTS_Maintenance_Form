@@ -58,7 +58,6 @@ export function DynamicForm({
     initialImageMap ?? {},
   );
   const [errors, setErrors] = useState<Record<number, string>>({});
-  const [shakeKey, setShakeKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const handleChange = (index: number, value: ValueType) => {
@@ -86,7 +85,6 @@ export function DynamicForm({
     setSaving(true);
     const firstErrorIndex = validate();
     if (firstErrorIndex !== null) {
-      setShakeKey((prev) => prev + 1);
       document
         .getElementById(`question-${firstErrorIndex}`)
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -174,7 +172,7 @@ export function DynamicForm({
           case "TextBox":
             return (
               <Box
-                key={shakeKey}
+                key={index}
                 id={`question-${index}`}
                 sx={{ ...questionBoxStyle, borderColor: errorBorder }}
               >
@@ -195,7 +193,7 @@ export function DynamicForm({
           case "MultipleChoice":
             return (
               <Box
-                key={shakeKey}
+                key={index}
                 id={`question-${index}`}
                 sx={{ ...questionBoxStyle, borderColor: errorBorder }}
               >
@@ -224,7 +222,7 @@ export function DynamicForm({
           case "Checkbox":
             return (
               <Box
-                key={shakeKey}
+                key={index}
                 id={`question-${index}`}
                 sx={{ ...questionBoxStyle, borderColor: errorBorder }}
               >
@@ -262,7 +260,7 @@ export function DynamicForm({
           case "Dropdown":
             return (
               <Box
-                key={shakeKey}
+                key={index}
                 id={`question-${index}`}
                 sx={{ ...questionBoxStyle, borderColor: errorBorder }}
               >
@@ -297,7 +295,7 @@ export function DynamicForm({
 
             return (
               <Box
-                key={shakeKey}
+                key={index}
                 id={`question-${index}`}
                 sx={{ ...questionBoxStyle, borderColor: errorBorder }}
               >
