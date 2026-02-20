@@ -17,6 +17,11 @@ import {
   saveImageBase64,
   loadImageBase64,
 } from "../utils/imageStore";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 const questionBoxStyle = {
   display: "flex",
@@ -83,51 +88,55 @@ export function DynamicForm({
 
   const handleSubmit = async () => {
     setSaving(true);
-    const firstErrorIndex = validate();
-    if (firstErrorIndex !== null) {
-      document
-        .getElementById(`question-${firstErrorIndex}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setSaving(false);
-      return;
-    }
-
-    const newImageMap: Record<number, string> = { ...imageMap };
-    const cleanAnswers: Record<number, unknown> = { ...values };
-
-    // Save files as Base64
-    for (const [indexStr, val] of Object.entries(values)) {
-      const index = Number(indexStr);
-      if (val instanceof File) {
-        const base64 = await fileToBase64(val);
-        const id = await saveImageBase64(base64);
-        newImageMap[index] = id;
-        delete cleanAnswers[index]; // don't store File directly
+    try {
+      const firstErrorIndex = validate();
+      if (firstErrorIndex !== null) {
+        document
+          .getElementById(`question-${firstErrorIndex}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setSaving(false);
+        return;
       }
+
+      const newImageMap: Record<number, string> = { ...imageMap };
+      const cleanAnswers: Record<number, unknown> = { ...values };
+
+      for (const [indexStr, val] of Object.entries(values)) {
+        const index = Number(indexStr);
+        if (val instanceof File) {
+          const base64 = await fileToBase64(val);
+          const id = await saveImageBase64(base64);
+          newImageMap[index] = id;
+          delete cleanAnswers[index];
+        }
+      }
+
+      setImageMap(newImageMap);
+
+      const savedForm: SavedForm = {
+        id: crypto.randomUUID?.(),
+        createdAt: Date.now(),
+        questions,
+        answers: cleanAnswers,
+        imageMap: newImageMap,
+      };
+
+      const existing: SavedForm[] = JSON.parse(
+        localStorage.getItem("savedForms") || "[]",
+      );
+      localStorage.setItem(
+        "savedForms",
+        JSON.stringify([...existing, savedForm]),
+      );
+
+      await generateFormPDF(questions, cleanAnswers, newImageMap);
+      onSubmit(cleanAnswers);
+    } catch (error) {
+      console.error("Form submission failed:", error);
+      // Optionally show a user-friendly error message
+    } finally {
+      setSaving(false);
     }
-
-    // Update imageMap state
-    setImageMap(newImageMap);
-
-    const savedForm: SavedForm = {
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-      questions,
-      answers: cleanAnswers,
-      imageMap: newImageMap,
-    };
-
-    const existing: SavedForm[] = JSON.parse(
-      localStorage.getItem("savedForms") || "[]",
-    );
-    localStorage.setItem(
-      "savedForms",
-      JSON.stringify([...existing, savedForm]),
-    );
-
-    generateFormPDF(questions, cleanAnswers, newImageMap);
-    onSubmit(cleanAnswers);
-    setSaving(false);
   };
 
   // Restore Base64 images on mount
@@ -329,6 +338,60 @@ export function DynamicForm({
               </Box>
             );
           }
+
+          case "DatePicker":
+            return (
+              <Box
+                key={index}
+                id={`question-${index}`}
+                sx={{ ...questionBoxStyle, borderColor: errorBorder }}
+              >
+                <QuestionLabel text={q.question} required={q.required} />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    value={val ? dayjs(val as string) : null}
+                    onChange={(newValue) =>
+                      handleChange(index, newValue?.toISOString() ?? null)
+                    }
+                    slotProps={{
+                      textField: { fullWidth: true, error: !!errors[index] },
+                    }}
+                  />
+                </LocalizationProvider>
+                {errors[index] && (
+                  <Typography color="error" variant="caption">
+                    {errors[index]}
+                  </Typography>
+                )}
+              </Box>
+            );
+
+          case "TimePicker":
+            return (
+              <Box
+                key={index}
+                id={`question-${index}`}
+                sx={{ ...questionBoxStyle, borderColor: errorBorder }}
+              >
+                <QuestionLabel text={q.question} required={q.required} />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <TimePicker
+                    value={val ? dayjs(val as string) : null}
+                    onChange={(newValue) =>
+                      handleChange(index, newValue?.toISOString() ?? null)
+                    }
+                    slotProps={{
+                      textField: { fullWidth: true, error: !!errors[index] },
+                    }}
+                  />
+                </LocalizationProvider>
+                {errors[index] && (
+                  <Typography color="error" variant="caption">
+                    {errors[index]}
+                  </Typography>
+                )}
+              </Box>
+            );
 
           default:
             return null;

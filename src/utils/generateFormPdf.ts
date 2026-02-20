@@ -35,23 +35,28 @@ export async function generateFormPDF(
 
     /* ---- ANSWER ---- */
     if (q.answerType === "FileUpload" && imageMap?.[i]) {
-      const base64 = await loadImageBase64(imageMap[i]);
+      try {
+        const base64 = await loadImageBase64(imageMap[i]);
 
-      if (base64) {
-        const format = base64.includes("image/png") ? "PNG" : "JPEG";
-        const imgHeight = 80;
-        const imgPadding = 5;
+        if (base64) {
+          const format = base64.includes("image/png") ? "PNG" : "JPEG";
+          const imgHeight = 80;
+          const imgPadding = 5;
 
-        if (y + imgHeight > PAGE_HEIGHT - MARGIN) {
-          doc.addPage();
-          y = MARGIN;
+          if (y + imgHeight > PAGE_HEIGHT - MARGIN) {
+            doc.addPage();
+            y = MARGIN;
+          }
+
+          doc.addImage(base64, format, 10, y, 80, imgHeight);
+          y += imgHeight + imgPadding;
+        } else {
+          doc.text("A: [Image missing]", 14, y);
+          y += 10;
         }
-
-        doc.addImage(base64, format, 10, y, 80, imgHeight);
-        y += imgHeight + imgPadding;
-      } else {
-        doc.text("A: [Image missing]", 14, y);
-        y += 10;
+      } catch (err) {
+        console.error("Image load error for question", i, err);
+        doc.text("A: [Image error]", 14, y);
       }
     } else {
       const answerText = Array.isArray(answer)

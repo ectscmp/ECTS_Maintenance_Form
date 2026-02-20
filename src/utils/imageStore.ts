@@ -53,6 +53,11 @@ export async function loadImageBase64(id: string): Promise<string | undefined> {
 
 export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (file.size > 5 * 1024 * 1024) {
+      // 5 MB
+      reject(new Error("File too large (max 5 MB)"));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
