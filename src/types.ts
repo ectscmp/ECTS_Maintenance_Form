@@ -44,9 +44,13 @@ export type SavedForm = {
 
 export type FormValue = string | string[] | File | null;
 
-export type DynamicFormProps = {
+export interface DynamicFormProps {
   questions: QuestionList;
   initialValues?: Record<number, FormValue>;
   initialImageMap?: Record<number, string>;
-  onSubmit: (answers: Record<number, unknown>) => void;
-};
+  onFormChange: (
+    values: Record<number, FormValue>,
+    imageMap: Record<number, string>,
+  ) => void;
+  onSubmit: (values: Record<number, FormValue>) => void;
+}
