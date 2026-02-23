@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import type { DynamicFormProps } from "../types";
+import type { DynamicFormProps, FormValue } from "../types";
 import { useFormState } from "../hooks/useFormState";
 import { QuestionWrapper } from "./QuestionWrapper";
 import { TextBoxQuestion } from "./TextBoxQuestion";
@@ -9,6 +9,9 @@ import { DropdownQuestion } from "./DropdownQuestion";
 import { FileUploadQuestion } from "./FileUploadQuestion";
 import { DatePickerQuestion } from "./DatePickerQuestion";
 import { TimePickerQuestion } from "./TimePickerQuestion";
+import { useCallback } from "react";
+
+type ValueType = string | string[] | null;
 
 export function DynamicForm({
   questions,
@@ -17,6 +20,26 @@ export function DynamicForm({
   initialImageMap,
   onFormChange,
 }: DynamicFormProps) {
+  const handleFormSubmit = useCallback(
+    (answers: Record<number, unknown>) => {
+      // Cast is safe because useFormState guarantees the values match FormValue
+      onSubmit(answers as Record<number, FormValue>);
+    },
+    [onSubmit],
+  );
+
+  const handleFormChange = useCallback(
+    (values: Record<number, ValueType>, imageMap: Record<number, string>) => {
+      // Cast values back to FormValue (safe, as explained earlier)
+      onFormChange(values as Record<number, FormValue>, imageMap);
+    },
+    [onFormChange],
+  );
+
+  const typedInitialValues = initialValues as
+    | Record<number, ValueType>
+    | undefined;
+
   const {
     values,
     errors,
@@ -26,10 +49,10 @@ export function DynamicForm({
     handleSubmit,
   } = useFormState(
     questions,
-    onSubmit,
-    initialValues,
+    handleFormSubmit,
+    typedInitialValues,
     initialImageMap,
-    onFormChange,
+    handleFormChange,
   );
 
   return (
